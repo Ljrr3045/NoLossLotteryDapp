@@ -8,7 +8,7 @@ import "./Interfaces/IProvider.sol";
 import "./Interfaces/ISwap.sol";
 import "./Interfaces/IcErc20.sol";
 
-contract Lottery is OwnableUpgradeable{
+contract LotteryV1 is OwnableUpgradeable{
 
     bool internal init;
     address internal admin;
