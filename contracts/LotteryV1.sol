@@ -11,6 +11,7 @@ import "./Interfaces/IcErc20.sol";
 contract Lottery is OwnableUpgradeable{
 
     bool internal init;
+    address internal admin;
     address internal dai;
     address internal usdc;
     address internal usdt;
@@ -30,12 +31,17 @@ contract Lottery is OwnableUpgradeable{
 
     enum Token {DAI, USDC, USDT, WETH}
 
-//Mappins & Arrays
+//Mappins
 
-    mapping(uint => mapping(address => uint)) public userTicketBalance;
+    mapping(uint => mapping(address => uint)) public userTicketBalanceWithToken;
+    mapping(uint => mapping(address => uint)) public userTicketBalanceWithEth;
     mapping(uint => mapping(uint => address)) public ticketOwner;
     mapping(uint => uint) public ticketCount;
     mapping(uint => uint) public lotteryWinner;
+    mapping(uint => uint) public amountPool;
+    mapping(uint => bool) public setCompone;
+    mapping(uint => uint) public winnerAmount;
+
 
 //Events
 
@@ -45,9 +51,21 @@ modifier upDateData() {
 
     if(block.timestamp > (time + 7 days)){
         lotteryWinner[lotteryRound] = _getRamdomNumber(ticketCount[lotteryRound]);
+        winnerAmount[lotteryRound] = _balanceOfUnderlying();
+        _componeRedeem(_getCTokenBalance());
         time = block.timestamp;
         lotteryRound++;
         ticketCount[lotteryRound + 1] = 1;
+    }
+    _;
+}
+
+modifier investCompone() {
+    if(block.timestamp > (time + 2 days)){
+        if(setCompone[lotteryRound] == false){
+            _componeMint(amountPool[lotteryRound]);
+            setCompone[lotteryRound] = true;
+        }
     }
     _;
 }
@@ -57,6 +75,7 @@ modifier upDateData() {
     function initContract(address _ramdomNumber) public{
         require(init == false, "Contract are init");
         __Ownable_init();
+        admin = msg.sender;
 
         cToken = IcErc20(0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9);
         ramdomNumber = IRamdomNumber(_ramdomNumber);
@@ -81,98 +100,121 @@ modifier upDateData() {
         init = true;
     }
 
-    function buyTicketWithToken(uint _amount, Token _token) public upDateData{
+    function buyTicketWithToken(uint _amount, Token _token) public investCompone upDateData{
         require( _token != Token.WETH);
         require(_amount > tikectPriceInToken);
         require((_amount % tikectPriceInToken) == 0);
 
+        uint _amountPool;
         uint amountTikects = _amount / tikectPriceInToken;
 
         if(_token == Token.DAI){
 
             _transferToken(dai,_amount);
-            _swapper(pool3, dai, usdt, _amount);
+            _amountPool = _swapper(pool3, dai, usdt, _amount);
 
         } else if(_token == Token.USDC){
 
             _transferToken(usdc,_amount);
-            _swapper(pool3, usdc, usdt, _amount);
+            _amountPool = _swapper(pool3, usdc, usdt, _amount);
 
         }else{
 
             _transferToken(usdt,_amount);
+            _amountPool = _amount;
         }
 
         if(block.timestamp <= (time + 2 days)){
-            userTicketBalance[lotteryRound][msg.sender] += amountTikects;
+            userTicketBalanceWithToken[lotteryRound][msg.sender] += amountTikects;
+            amountPool[lotteryRound] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound);
             } 
         }else{
-            userTicketBalance[lotteryRound + 1][msg.sender] += amountTikects; 
+            userTicketBalanceWithToken[lotteryRound + 1][msg.sender] += amountTikects; 
+            amountPool[lotteryRound + 1] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound + 1);
             }
         }
     }
 
-    function buyTicketWithEth() public payable upDateData{
+    function buyTicketWithEth() public payable investCompone upDateData{
         require(msg.value > tikectPriceInEth);
         require((msg.value % tikectPriceInEth) == 0);
 
+        uint _amountPool;
         uint amountTikects = msg.value / tikectPriceInEth;
         uint _expected = exchange.get_exchange_amount(tryCryptoPool, weth, usdt, msg.value);
-        exchange.exchange{ value: msg.value }(tryCryptoPool, weth, usdt, msg.value, _expected, address(this));
+        _amountPool = exchange.exchange{ value: msg.value }(tryCryptoPool, weth, usdt, msg.value, _expected, address(this));
 
         if(block.timestamp <= (time + 2 days)){
-            userTicketBalance[lotteryRound][msg.sender] += amountTikects;
+            userTicketBalanceWithEth[lotteryRound][msg.sender] += amountTikects;
+            amountPool[lotteryRound] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound);
             } 
         }else{
-            userTicketBalance[lotteryRound + 1][msg.sender] += amountTikects; 
+            userTicketBalanceWithEth[lotteryRound + 1][msg.sender] += amountTikects; 
+            amountPool[lotteryRound + 1] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound + 1);
             }
         }
     }
 
-    function iWinWantToWithdraw(uint _round) public upDateData{
-        require(_round > 0 && _round <= lotteryRound);
+    function iWinWantToWithdraw(uint _round) public investCompone upDateData{
+        require(_round > 0 && _round < lotteryRound);
         require(ticketOwner[_round][lotteryWinner[_round]] == msg.sender);
+        require(winnerAmount[_round] > 0);
 
+        uint payAdmin = (winnerAmount[_round] * 5) / 100;
+        uint payWinner = winnerAmount[_round] - payAdmin;
+
+        _transferTokenOut(usdt, payAdmin, admin);
+        _transferTokenOut(usdt, payWinner, msg.sender);
+
+        winnerAmount[_round] = 0;
     }
 
-    function getMyMoneyBack(Token _token, uint _round) public upDateData{
-        require(_round > 0 && _round <= lotteryRound);
-        require(userTicketBalance[_round][msg.sender] > 0);
+    function getMyMoneyBackInToken(Token _token, uint _round) public investCompone upDateData{
+        require( _token != Token.WETH);
+        require(_round > 0 && _round < lotteryRound);
+        require(userTicketBalanceWithToken[_round][msg.sender] > 0);
 
         uint _exchange;
         uint _amount;
 
         if(_token == Token.DAI){
-            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInToken;
+            _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
            _exchange = _swapper(pool3, usdt, dai, _amount);
            _transferTokenOut(dai, _exchange, msg.sender);
-           userTicketBalance[_round][msg.sender] = 0;
+           userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else if(_token == Token.USDC){
-            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInToken;
+            _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
             _exchange = _swapper(pool3, usdt, usdc, _amount);
             _transferTokenOut(usdc, _exchange, msg.sender);
-            userTicketBalance[_round][msg.sender] = 0;
+            userTicketBalanceWithToken[_round][msg.sender] = 0;
 
-        }else if(_token == Token.WETH){
-            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInEth;
-            _exchange = _swapper(tryCryptoPool, usdt, weth, _amount);
-            _transferTokenOut(weth, _exchange, msg.sender);
-            userTicketBalance[_round][msg.sender] = 0;
-            
         }else{
-            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInToken;
+            _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
             _transferTokenOut(usdt, _amount, msg.sender);
-            userTicketBalance[_round][msg.sender] = 0;
-        }   
+            userTicketBalanceWithToken[_round][msg.sender] = 0;
+        }
+    }
+
+    function getMyMoneyBackInEth(uint _round) public investCompone upDateData{
+        require(_round > 0 && _round < lotteryRound);
+        require(userTicketBalanceWithEth[_round][msg.sender] > 0);
+
+        uint _exchange;
+        uint _amount;
+
+        _amount = userTicketBalanceWithEth[_round][msg.sender] * tikectPriceInEth;
+        _exchange = _swapper(tryCryptoPool, usdt, weth, _amount);
+        _transferTokenOut(weth, _exchange, msg.sender);
+        userTicketBalanceWithEth[_round][msg.sender] = 0;
     }
 
 //Internal Functions
@@ -211,16 +253,15 @@ modifier upDateData() {
         return cToken.balanceOf(address(this));
     }
 
-    function _componeRedeem(uint _amount) external {
+    function _componeRedeem(uint _amount) internal {
         require(cToken.redeem(_amount) == 0, "redeem failed");
     }
 
-    function _balanceOfUnderlying() external returns (uint) {
+    function _balanceOfUnderlying() internal returns (uint) {
         return cToken.balanceOfUnderlying(address(this));
     }
 
     function _getRamdomNumber(uint _until) internal returns(uint){
-
         ramdomNumber.setUntil(_until);
         ramdomNumber.getRandomNumber();
         return ramdomNumber.randomResult();
