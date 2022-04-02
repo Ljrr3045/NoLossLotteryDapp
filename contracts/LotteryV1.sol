@@ -19,10 +19,12 @@ contract Lottery is OwnableUpgradeable{
     address internal tryCryptoPool;
     uint public tikectPriceInToken;
     uint public tikectPriceInEth;
+    uint internal time;
+    uint public lotteryRound;
     IProvider internal provider;
     ISwap internal exchange;
     IRamdomNumber internal ramdomNumber;
-    IcErc20 internal cErc20;
+    IcErc20 internal cToken;
 
 //Enums
 
@@ -30,9 +32,25 @@ contract Lottery is OwnableUpgradeable{
 
 //Mappins & Arrays
 
+    mapping(uint => mapping(address => uint)) public userTicketBalance;
+    mapping(uint => mapping(uint => address)) public ticketOwner;
+    mapping(uint => uint) public ticketCount;
+    mapping(uint => uint) public lotteryWinner;
+
 //Events
 
 //Modifiers
+
+modifier upDateData() {
+
+    if(block.timestamp > (time + 7 days)){
+        lotteryWinner[lotteryRound] = _getRamdomNumber(ticketCount[lotteryRound]);
+        time = block.timestamp;
+        lotteryRound++;
+        ticketCount[lotteryRound + 1] = 1;
+    }
+    _;
+}
 
 //Public Functions
 
@@ -40,7 +58,7 @@ contract Lottery is OwnableUpgradeable{
         require(init == false, "Contract are init");
         __Ownable_init();
 
-        cErc20 = IcErc20(0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9);
+        cToken = IcErc20(0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9);
         ramdomNumber = IRamdomNumber(_ramdomNumber);
         provider = IProvider(0x0000000022D53366457F9d5E68Ec105046FC4383);
         exchange = ISwap(provider.get_address(2));
@@ -54,14 +72,21 @@ contract Lottery is OwnableUpgradeable{
         weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
         tikectPriceInToken = 10;
-        tikectPriceInEth= 3000000000000000;
+        tikectPriceInEth = 3000000000000000;
 
+        lotteryRound = 1;
+        ticketCount[1] = lotteryRound;
+        ticketCount[2] = lotteryRound;
+        time = block.timestamp;
         init = true;
     }
 
-    function buyTicketWithToken(uint _amount, Token _token) public{
-
+    function buyTicketWithToken(uint _amount, Token _token) public upDateData{
         require( _token != Token.WETH);
+        require(_amount > tikectPriceInToken);
+        require((_amount % tikectPriceInToken) == 0);
+
+        uint amountTikects = _amount / tikectPriceInToken;
 
         if(_token == Token.DAI){
 
@@ -77,41 +102,86 @@ contract Lottery is OwnableUpgradeable{
 
             _transferToken(usdt,_amount);
         }
+
+        if(block.timestamp <= (time + 2 days)){
+            userTicketBalance[lotteryRound][msg.sender] += amountTikects;
+            for(uint i=0; i<amountTikects; i++){
+                _ticketAsing(lotteryRound);
+            } 
+        }else{
+            userTicketBalance[lotteryRound + 1][msg.sender] += amountTikects; 
+            for(uint i=0; i<amountTikects; i++){
+                _ticketAsing(lotteryRound + 1);
+            }
+        }
     }
 
-    function buyTicketWithEth() public payable{
+    function buyTicketWithEth() public payable upDateData{
+        require(msg.value > tikectPriceInEth);
+        require((msg.value % tikectPriceInEth) == 0);
 
+        uint amountTikects = msg.value / tikectPriceInEth;
         uint _expected = exchange.get_exchange_amount(tryCryptoPool, weth, usdt, msg.value);
         exchange.exchange{ value: msg.value }(tryCryptoPool, weth, usdt, msg.value, _expected, address(this));
+
+        if(block.timestamp <= (time + 2 days)){
+            userTicketBalance[lotteryRound][msg.sender] += amountTikects;
+            for(uint i=0; i<amountTikects; i++){
+                _ticketAsing(lotteryRound);
+            } 
+        }else{
+            userTicketBalance[lotteryRound + 1][msg.sender] += amountTikects; 
+            for(uint i=0; i<amountTikects; i++){
+                _ticketAsing(lotteryRound + 1);
+            }
+        }
     }
 
-    function iWinWantToWithdraw() public{}
+    function iWinWantToWithdraw(uint _round) public upDateData{
+        require(_round > 0 && _round <= lotteryRound);
+        require(ticketOwner[_round][lotteryWinner[_round]] == msg.sender);
 
-    function getMyMoneyBack(Token _token) public{
+    }
+
+    function getMyMoneyBack(Token _token, uint _round) public upDateData{
+        require(_round > 0 && _round <= lotteryRound);
+        require(userTicketBalance[_round][msg.sender] > 0);
 
         uint _exchange;
+        uint _amount;
 
         if(_token == Token.DAI){
-
-           _exchange = _swapper(pool3, usdt, dai, 10);
+            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInToken;
+           _exchange = _swapper(pool3, usdt, dai, _amount);
            _transferTokenOut(dai, _exchange, msg.sender);
+           userTicketBalance[_round][msg.sender] = 0;
 
         }else if(_token == Token.USDC){
-
-            _exchange = _swapper(pool3, usdt, usdc, 10);
+            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInToken;
+            _exchange = _swapper(pool3, usdt, usdc, _amount);
             _transferTokenOut(usdc, _exchange, msg.sender);
+            userTicketBalance[_round][msg.sender] = 0;
 
         }else if(_token == Token.WETH){
-        
-            _exchange = _swapper(tryCryptoPool, usdt, weth, 10);
+            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInEth;
+            _exchange = _swapper(tryCryptoPool, usdt, weth, _amount);
             _transferTokenOut(weth, _exchange, msg.sender);
+            userTicketBalance[_round][msg.sender] = 0;
+            
         }else{
-
-            _transferTokenOut(usdt, _exchange, msg.sender);
+            _amount = userTicketBalance[_round][msg.sender] * tikectPriceInToken;
+            _transferTokenOut(usdt, _amount, msg.sender);
+            userTicketBalance[_round][msg.sender] = 0;
         }   
     }
 
 //Internal Functions
+
+    function _ticketAsing(uint _round) internal {
+        require(_round == 1 || _round == 2);
+        ticketOwner[_round][ticketCount[_round]] = msg.sender;
+        ticketCount[_round]++;
+    }
 
     function _swapper(address _pool, address _tokenFrom, address _tokenTo, uint _amount) internal returns(uint){
 
@@ -130,9 +200,29 @@ contract Lottery is OwnableUpgradeable{
     }
 
     function _transferTokenOut(address _token, uint _amount, address _to) internal {
-
         IERC20(_token).transfer(_to, _amount);
     }
 
-    function _compone() internal {}
+    function _componeMint(uint _amount) internal {
+        require(cToken.mint(_amount) == 0, "mint failed");
+    }
+
+    function _getCTokenBalance() internal view returns (uint) {
+        return cToken.balanceOf(address(this));
+    }
+
+    function _componeRedeem(uint _amount) external {
+        require(cToken.redeem(_amount) == 0, "redeem failed");
+    }
+
+    function _balanceOfUnderlying() external returns (uint) {
+        return cToken.balanceOfUnderlying(address(this));
+    }
+
+    function _getRamdomNumber(uint _until) internal returns(uint){
+
+        ramdomNumber.setUntil(_until);
+        ramdomNumber.getRandomNumber();
+        return ramdomNumber.randomResult();
+    }
 }
