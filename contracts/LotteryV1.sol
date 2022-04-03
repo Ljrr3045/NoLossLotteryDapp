@@ -1,14 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "./Interfaces/IRamdomNumber.sol";
 import "./Interfaces/IProvider.sol";
 import "./Interfaces/ISwap.sol";
 import "./Interfaces/IcErc20.sol";
 
-contract LotteryV1 is OwnableUpgradeable{
+contract LotteryV1{
 
     bool internal init;
     address internal admin;
@@ -74,7 +73,6 @@ modifier investCompone() {
 
     function initContract(address _ramdomNumber) public{
         require(init == false, "Contract are init");
-        __Ownable_init();
         admin = msg.sender;
 
         cToken = IcErc20(0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9);
@@ -234,15 +232,15 @@ modifier investCompone() {
 
     function _transferToken(address _token, uint _amount) internal {
 
-        IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        IERC20Upgradeable(_token).transferFrom(msg.sender, address(this), _amount);
 
         if(_token != usdt){
-            IERC20(_token).approve(address(exchange), _amount);
+            IERC20Upgradeable(_token).approve(address(exchange), _amount);
         }
     }
 
     function _transferTokenOut(address _token, uint _amount, address _to) internal {
-        IERC20(_token).transfer(_to, _amount);
+        IERC20Upgradeable(_token).transfer(_to, _amount);
     }
 
     function _componeMint(uint _amount) internal {

@@ -1,33 +1,35 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity >=0.7.0 <0.9.0;
 
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@chainlink/contracts/src/v0.7/VRFConsumerBase.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
  
 contract RamdomNumber is VRFConsumerBase, Ownable{
-    
+
     using SafeMath for uint;
 
     bytes32 internal keyHash;
+    bytes32 public lastRequestId;
     uint256 internal fee;
     uint256 public randomResult;
     uint public until;
 
-    constructor() 
+    constructor(address vrfCoordinator) 
         VRFConsumerBase(
-            0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
+            vrfCoordinator,
             0x514910771AF9Ca656af840dff83E8264EcF986CA  
         )
     {
-        keyHash = 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4;
-        fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
+        keyHash = 0xAA77729D3466CA35AE8D28B3BBAC7CC36A5031EFDC430821C02BC31A238AF445;
+        fee = 2 * 10 ** 18;
         until = 1;
     }
     
     function getRandomNumber() public onlyOwner returns(bytes32 requestId) {
         require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-        return requestRandomness(keyHash, fee);
+        lastRequestId = requestRandomness(keyHash, fee);
+        return lastRequestId;
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
