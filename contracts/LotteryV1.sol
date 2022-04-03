@@ -2,6 +2,8 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
 import "./Interfaces/IRamdomNumber.sol";
 import "./Interfaces/IProvider.sol";
 import "./Interfaces/ISwap.sol";
@@ -16,7 +18,6 @@ contract LotteryV1{
     address internal usdt;
     address internal weth;
     address internal pool3;
-    address internal tryCryptoPool;
     uint public tikectPriceInToken;
     uint public tikectPriceInEth;
     uint internal time;
@@ -25,6 +26,8 @@ contract LotteryV1{
     ISwap internal exchange;
     IRamdomNumber internal ramdomNumber;
     IcErc20 internal cToken;
+    ISwapRouter internal swapRouter;
+    IPeripheryPayments internal peripheryPayments;
 
 //Enums
 
@@ -69,19 +72,25 @@ modifier investCompone() {
     _;
 }
 
+modifier onlyAdmin() {
+        require(admin == msg.sender, "Ownable: caller is not the owner");
+        _;
+    }
+
 //Public Functions
 
     function initContract(address _ramdomNumber) public{
         require(init == false, "Contract are init");
         admin = msg.sender;
 
-        cToken = IcErc20(0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9);
+        cToken = IcErc20(0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643);
         ramdomNumber = IRamdomNumber(_ramdomNumber);
         provider = IProvider(0x0000000022D53366457F9d5E68Ec105046FC4383);
         exchange = ISwap(provider.get_address(2));
+        swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+        peripheryPayments = IPeripheryPayments(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
         pool3 = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
-        tryCryptoPool = 0x80466c64868E1ab14a1Ddf27A676C3fcBE638Fe5;
 
         dai = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -106,19 +115,19 @@ modifier investCompone() {
         uint _amountPool;
         uint amountTikects = _amount / tikectPriceInToken;
 
-        if(_token == Token.DAI){
+        if(_token == Token.USDT){
 
-            _transferToken(dai,_amount);
-            _amountPool = _swapper(pool3, dai, usdt, _amount);
+            _transferToken(usdt,_amount);
+            _amountPool = _swapper(pool3, usdt, dai, _amount);
 
         } else if(_token == Token.USDC){
 
             _transferToken(usdc,_amount);
-            _amountPool = _swapper(pool3, usdc, usdt, _amount);
+            _amountPool = _swapper(pool3, usdc, dai, _amount);
 
         }else{
 
-            _transferToken(usdt,_amount);
+            _transferToken(dai,_amount);
             _amountPool = _amount;
         }
 
@@ -142,10 +151,14 @@ modifier investCompone() {
         require((msg.value % tikectPriceInEth) == 0);
 
         uint _amountPool;
-        uint amountTikects = msg.value / tikectPriceInEth;
-        uint _expected = exchange.get_exchange_amount(tryCryptoPool, weth, usdt, msg.value);
-        _amountPool = exchange.exchange{ value: msg.value }(tryCryptoPool, weth, usdt, msg.value, _expected, address(this));
+        uint _amountPoolBefore;
+        uint amountTikects;
 
+        amountTikects = msg.value / tikectPriceInEth;
+        _amountPoolBefore = IERC20Upgradeable(dai).balanceOf(address(this));
+        _swapEthForToken(weth, dai, msg.value);
+        _amountPool = IERC20Upgradeable(dai).balanceOf(address(this)) - _amountPoolBefore;
+ 
         if(block.timestamp <= (time + 2 days)){
             userTicketBalanceWithEth[lotteryRound][msg.sender] += amountTikects;
             amountPool[lotteryRound] += _amountPool;
@@ -169,8 +182,8 @@ modifier investCompone() {
         uint payAdmin = (winnerAmount[_round] * 5) / 100;
         uint payWinner = winnerAmount[_round] - payAdmin;
 
-        _transferTokenOut(usdt, payAdmin, admin);
-        _transferTokenOut(usdt, payWinner, msg.sender);
+        _transferTokenOut(dai, payAdmin, admin);
+        _transferTokenOut(dai, payWinner, msg.sender);
 
         winnerAmount[_round] = 0;
     }
@@ -183,21 +196,21 @@ modifier investCompone() {
         uint _exchange;
         uint _amount;
 
-        if(_token == Token.DAI){
+        if(_token == Token.USDT){
             _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
-           _exchange = _swapper(pool3, usdt, dai, _amount);
-           _transferTokenOut(dai, _exchange, msg.sender);
+           _exchange = _swapper(pool3, dai, usdt, _amount);
+           _transferTokenOut(usdt, _exchange, msg.sender);
            userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else if(_token == Token.USDC){
             _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
-            _exchange = _swapper(pool3, usdt, usdc, _amount);
+            _exchange = _swapper(pool3, dai, usdc, _amount);
             _transferTokenOut(usdc, _exchange, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else{
             _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
-            _transferTokenOut(usdt, _amount, msg.sender);
+            _transferTokenOut(dai, _amount, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
         }
     }
@@ -206,13 +219,18 @@ modifier investCompone() {
         require(_round > 0 && _round < lotteryRound);
         require(userTicketBalanceWithEth[_round][msg.sender] > 0);
 
-        uint _exchange;
         uint _amount;
 
         _amount = userTicketBalanceWithEth[_round][msg.sender] * tikectPriceInEth;
-        _exchange = _swapper(tryCryptoPool, usdt, weth, _amount);
-        _transferTokenOut(weth, _exchange, msg.sender);
+        _swapTokenForEth(dai, weth, _amount);
         userTicketBalanceWithEth[_round][msg.sender] = 0;
+    }
+
+    function setUpDateDate() public onlyAdmin investCompone upDateData{}
+
+    function transferAdmin(address  newAdmin) public virtual onlyAdmin {
+        require( newAdmin != address(0), "Ownable: new owner is the zero address");
+        admin = newAdmin;
     }
 
 //Internal Functions
@@ -230,6 +248,47 @@ modifier investCompone() {
         return _exchage;
     }
 
+    function _swapEthForToken(address _tokenIn, address _tokenOut, uint amountIn) internal {
+
+        uint24 poolFee = 3000;
+
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: _tokenIn,
+                tokenOut: _tokenOut,
+                fee: poolFee,
+                recipient: address(this),
+                deadline: block.timestamp + 10,
+                amountIn: amountIn,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            }
+        );
+
+        swapRouter.exactInputSingle{ value: amountIn }(params);
+        peripheryPayments.refundETH();
+    }
+
+    function _swapTokenForEth(address _tokenIn, address _tokenOut, uint amountIn) internal {
+
+        uint24 poolFee = 3000;
+
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: _tokenIn,
+                tokenOut: _tokenOut,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: block.timestamp + 10,
+                amountIn: amountIn,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            }
+        );
+
+        swapRouter.exactInputSingle(params);
+    }
+
     function _transferToken(address _token, uint _amount) internal {
 
         IERC20Upgradeable(_token).transferFrom(msg.sender, address(this), _amount);
@@ -244,6 +303,7 @@ modifier investCompone() {
     }
 
     function _componeMint(uint _amount) internal {
+        IERC20Upgradeable(dai).approve(address(cToken), _amount);
         require(cToken.mint(_amount) == 0, "mint failed");
     }
 
