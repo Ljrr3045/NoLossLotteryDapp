@@ -5,4 +5,5 @@ interface IRamdomNumber {
     function getRandomNumber() external returns(bytes32 requestId);
     function setUntil(uint _until) external;
     function randomResult() external view returns(uint256);
+    function lastRequestId() external view returns(bytes32);
 }

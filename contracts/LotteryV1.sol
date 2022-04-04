@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
 import "./Interfaces/IRamdomNumber.sol";
+import "./Interfaces/IVRFCoordinatorMock.sol";
 import "./Interfaces/IProvider.sol";
 import "./Interfaces/ISwap.sol";
 import "./Interfaces/IcErc20.sol";
@@ -28,6 +29,7 @@ contract LotteryV1{
     IcErc20 internal cToken;
     ISwapRouter internal swapRouter;
     IPeripheryPayments internal peripheryPayments;
+    IVRFCoordinator internal vrfCoordinator;
 
 //Enums
 
@@ -79,12 +81,13 @@ modifier onlyAdmin() {
 
 //Public Functions
 
-    function initContract(address _ramdomNumber) public{
+    function initContract(address _ramdomNumber, address _vrfCoordinator) public{
         require(init == false, "Contract are init");
         admin = msg.sender;
 
         cToken = IcErc20(0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643);
         ramdomNumber = IRamdomNumber(_ramdomNumber);
+        vrfCoordinator = IVRFCoordinator(_vrfCoordinator);
         provider = IProvider(0x0000000022D53366457F9d5E68Ec105046FC4383);
         exchange = ISwap(provider.get_address(2));
         swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -160,13 +163,13 @@ modifier onlyAdmin() {
         _amountPool = IERC20Upgradeable(dai).balanceOf(address(this)) - _amountPoolBefore;
  
         if(block.timestamp <= (time + 2 days)){
-            userTicketBalanceWithEth[lotteryRound][msg.sender] += amountTikects;
+            userTicketBalanceWithEth[lotteryRound][msg.sender] += _amountPool;
             amountPool[lotteryRound] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound);
             } 
         }else{
-            userTicketBalanceWithEth[lotteryRound + 1][msg.sender] += amountTikects; 
+            userTicketBalanceWithEth[lotteryRound + 1][msg.sender] += _amountPool; 
             amountPool[lotteryRound + 1] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound + 1);
@@ -221,7 +224,7 @@ modifier onlyAdmin() {
 
         uint _amount;
 
-        _amount = userTicketBalanceWithEth[_round][msg.sender] * tikectPriceInEth;
+        _amount = userTicketBalanceWithEth[_round][msg.sender];
         _swapTokenForEth(dai, weth, _amount);
         userTicketBalanceWithEth[_round][msg.sender] = 0;
     }
@@ -243,8 +246,7 @@ modifier onlyAdmin() {
 
     function _swapper(address _pool, address _tokenFrom, address _tokenTo, uint _amount) internal returns(uint){
 
-        uint _expected = exchange.get_exchange_amount(_pool, _tokenFrom, _tokenTo, _amount);
-        uint _exchage = exchange.exchange(_pool, _tokenFrom, _tokenTo, _amount, _expected, address(this));
+        uint _exchage = exchange.exchange(_pool, _tokenFrom, _tokenTo, _amount, 1, address(this));
         return _exchage;
     }
 
@@ -322,6 +324,7 @@ modifier onlyAdmin() {
     function _getRamdomNumber(uint _until) internal returns(uint){
         ramdomNumber.setUntil(_until);
         ramdomNumber.getRandomNumber();
+        vrfCoordinator.callBackWithRandomness(ramdomNumber.lastRequestId(),777,address(ramdomNumber));
         return ramdomNumber.randomResult();
     }
 }

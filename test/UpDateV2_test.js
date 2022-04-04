@@ -17,7 +17,7 @@ describe("UpDate LotteryV2", async ()=> {
         LotteryV1 = await ethers.getContractFactory("LotteryV1");
         LotteryV2 = await ethers.getContractFactory("LotteryV2");
 
-        lotteryV1 = await upgrades.deployProxy(LotteryV1,[ramdomNumber.address], {initializer: "initContract"});
+        lotteryV1 = await upgrades.deployProxy(LotteryV1,[ramdomNumber.address, vrfCoordinator.address], {initializer: "initContract"});
         lotteryV2 = await upgrades.upgradeProxy(lotteryV1, LotteryV2);
     });
 

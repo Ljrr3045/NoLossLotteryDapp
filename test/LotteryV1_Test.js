@@ -6,7 +6,7 @@ const usdcAbi = require("./ContractJson/Usdc.json");
 const { isCallTrace } = require("hardhat/internal/hardhat-network/stack-traces/message-trace");
 
 describe("LotteryV1", async ()=> {
-    let RamdomNumber, ramdomNumber, VrfCoordinator, vrfCoordinator, LotteryV1, lotteryV1, link, dai, usdc, admin, per1, per2, perLink, perDai;
+    let RamdomNumber, ramdomNumber, VrfCoordinator, vrfCoordinator, LotteryV1, lotteryV1, link, dai, usdc, admin, per1, per2, per3, perLink, perDai;
 
     before(async ()=> {
         await hre.network.provider.request({ method: "hardhat_impersonateAccount",params: ["0x4c381016af2185b97e4f6944c125603320762237"],});
@@ -25,7 +25,7 @@ describe("LotteryV1", async ()=> {
         LotteryV1 = await ethers.getContractFactory("LotteryV1");
         lotteryV1 = await LotteryV1.deploy();
 
-        [admin, per1, per2] = await ethers.getSigners();
+        [admin, per1, per2, per3] = await ethers.getSigners();
         perLink = await ethers.getSigner("0x4c381016af2185b97e4f6944c125603320762237");
         perDai = await ethers.getSigner("0x820c79d0b0c90400cdd24d8916f5bd4d6fba4cc3");
 
@@ -40,15 +40,33 @@ describe("LotteryV1", async ()=> {
         ]);
 
         await link.connect(perLink).transfer(ramdomNumber.address, ethers.utils.parseEther("1000"));
-        await ramdomNumber.connect(admin).transferOwnership(lotteryV1.address);
-        await lotteryV1.connect(admin).initContract(ramdomNumber.address);
+        await dai.connect(perDai).transfer(per1.address, ethers.utils.parseEther("1000"));
+        await dai.connect(perDai).transfer(per2.address, ethers.utils.parseEther("1000"));
 
+        await ramdomNumber.connect(admin).transferOwnership(lotteryV1.address);
+        await lotteryV1.connect(admin).initContract(ramdomNumber.address, vrfCoordinator.address);
+
+        expect(await link.connect(perLink).balanceOf(ramdomNumber.address)).to.equal(ethers.utils.parseEther("1000"));
+        expect(await dai.connect(perDai).balanceOf(per1.address)).to.equal(ethers.utils.parseEther("1000"));
+        expect(await dai.connect(perDai).balanceOf(per2.address)).to.equal(ethers.utils.parseEther("1000"));
         expect(await ramdomNumber.connect(admin).owner()).to.equal(lotteryV1.address);
     });
 
     describe("Start of contract", async ()=> {
         it("Error: Contract cannot be started twice", async ()=> {
-            await expect(lotteryV1.connect(admin).initContract(ramdomNumber.address)).to.be.revertedWith("Contract are init");
+            await expect(lotteryV1.connect(admin).initContract(ramdomNumber.address, vrfCoordinator.address)).to.be.revertedWith("Contract are init");
         });
+    });
+
+    describe("Purchase of tickets", async ()=> {
+
+    });
+
+    describe("Withdrawal of money", async ()=> {
+
+    });
+
+    describe("Claim prime", async ()=> {
+
     });
 });
