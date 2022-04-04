@@ -1,10 +1,9 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const daiAbi = require("./ContractJson/Dai.json");
-const usdtAbi = require("./ContractJson/Usdt.json");
 
-describe("Curve test", async ()=> {
-    let CurveTest, curveTest, dai, usdt, per1, perDai, cambio;
+xdescribe("Curve test", async ()=> {
+    let CurveTest, curveTest, dai, per1, perDai, cambio;
 
     before(async ()=> {
 
@@ -13,7 +12,6 @@ describe("Curve test", async ()=> {
         CurveTest = await ethers.getContractFactory("CurveTest");
         curveTest = await CurveTest.deploy();
 
-        usdt = await new ethers.Contract( "0xdAC17F958D2ee523a2206206994597C13D831ec7" , usdtAbi);
         dai = await new ethers.Contract( "0x6B175474E89094C44Da98b954EedeAC495271d0F" , daiAbi);
 
         [per1] = await ethers.getSigners();

@@ -1,8 +1,8 @@
 {
   "manifestVersion": "3.2",
   "admin": {
-    "address": "0xB06c856C8eaBd1d8321b687E188204C1018BC4E5",
-    "txHash": "0xcd9afed1050ae0eff0c9bfe37f0196189ea3b9e3cc2ad126b6f2ccd4598f9cf5"
+    "address": "0xAD523115cd35a8d4E60B3C0953E0E0ac10418309",
+    "txHash": "0x166f443d9823a0fb1a1620fca0220e401813fced0e05f26abcd26de3af971bff"
   },
   "proxies": [
     {
@@ -27,14 +27,19 @@
     },
     {
       "address": "0xaB7B4c595d3cE8C85e16DA86630f2fc223B05057",
-      "txHash": "0x181f91415f080063b7929f4f79d56ee330feb8bfe996b58356b6c5cd45247acd",
+      "txHash": "0xadac61502aaa8271e1168c75edd58675cbe75534ba30c6e65f54b435b214f498",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x045857BDEAE7C1c7252d611eB24eB55564198b4C",
+      "txHash": "0x8dc7ed93e1afc197db7fc8516ac5591a12d0545fa080898032d2fe51d87e5c44",
       "kind": "transparent"
     }
   ],
   "impls": {
-    "3e5845fb61dd2bded1543188de59386eb32e44c0c60a8d838f34b9abab5811d0": {
+    "fa7b6a20d58211bcedfe32dacc1022c8be24949c0e6f156373fa342b30cf278b": {
       "address": "0xddE78e6202518FF4936b5302cC2891ec180E8bFf",
-      "txHash": "0xcb1769ab93f5f28c169388ddd7de7f5cb6d7f492614d31effa50612b37a3559d",
+      "txHash": "0x3816fbc5da34a2831d4ea2cd92cecd18754470aed529911f52ebc9785418f280",
       "layout": {
         "storage": [
           {
@@ -43,7 +48,7 @@
             "slot": "0",
             "type": "t_bool",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:12"
+            "src": "contracts\\LotteryV1.sol:16"
           },
           {
             "label": "admin",
@@ -51,7 +56,7 @@
             "slot": "0",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:13"
+            "src": "contracts\\LotteryV1.sol:17"
           },
           {
             "label": "dai",
@@ -59,7 +64,7 @@
             "slot": "1",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:14"
+            "src": "contracts\\LotteryV1.sol:18"
           },
           {
             "label": "usdc",
@@ -67,7 +72,7 @@
             "slot": "2",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:15"
+            "src": "contracts\\LotteryV1.sol:19"
           },
           {
             "label": "usdt",
@@ -75,7 +80,7 @@
             "slot": "3",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:16"
+            "src": "contracts\\LotteryV1.sol:20"
           },
           {
             "label": "weth",
@@ -83,7 +88,7 @@
             "slot": "4",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:17"
+            "src": "contracts\\LotteryV1.sol:21"
           },
           {
             "label": "pool3",
@@ -91,143 +96,151 @@
             "slot": "5",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:18"
-          },
-          {
-            "label": "tryCryptoPool",
-            "offset": 0,
-            "slot": "6",
-            "type": "t_address",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:19"
+            "src": "contracts\\LotteryV1.sol:22"
           },
           {
             "label": "tikectPriceInToken",
             "offset": 0,
-            "slot": "7",
-            "type": "t_uint256",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:20"
-          },
-          {
-            "label": "tikectPriceInEth",
-            "offset": 0,
-            "slot": "8",
-            "type": "t_uint256",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:21"
-          },
-          {
-            "label": "time",
-            "offset": 0,
-            "slot": "9",
-            "type": "t_uint256",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:22"
-          },
-          {
-            "label": "lotteryRound",
-            "offset": 0,
-            "slot": "10",
+            "slot": "6",
             "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:23"
           },
           {
-            "label": "provider",
+            "label": "tikectPriceInEth",
             "offset": 0,
-            "slot": "11",
-            "type": "t_contract(IProvider)87",
+            "slot": "7",
+            "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:24"
           },
           {
-            "label": "exchange",
+            "label": "time",
             "offset": 0,
-            "slot": "12",
-            "type": "t_contract(ISwap)138",
+            "slot": "8",
+            "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:25"
           },
           {
-            "label": "ramdomNumber",
+            "label": "lotteryRound",
             "offset": 0,
-            "slot": "13",
-            "type": "t_contract(IRamdomNumber)105",
+            "slot": "9",
+            "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:26"
           },
           {
-            "label": "cToken",
+            "label": "provider",
             "offset": 0,
-            "slot": "14",
-            "type": "t_contract(IcErc20)169",
+            "slot": "10",
+            "type": "t_contract(IProvider)846",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:27"
           },
           {
-            "label": "userTicketBalanceWithToken",
+            "label": "exchange",
             "offset": 0,
-            "slot": "15",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "slot": "11",
+            "type": "t_contract(ISwap)897",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:35"
+            "src": "contracts\\LotteryV1.sol:28"
           },
           {
-            "label": "userTicketBalanceWithEth",
+            "label": "ramdomNumber",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_contract(IRamdomNumber)864",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:29"
+          },
+          {
+            "label": "cToken",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_contract(IcErc20)934",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:30"
+          },
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_contract(ISwapRouter)217",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:31"
+          },
+          {
+            "label": "peripheryPayments",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_contract(IPeripheryPayments)117",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:32"
+          },
+          {
+            "label": "userTicketBalanceWithToken",
             "offset": 0,
             "slot": "16",
             "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:36"
-          },
-          {
-            "label": "ticketOwner",
-            "offset": 0,
-            "slot": "17",
-            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_address))",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:37"
-          },
-          {
-            "label": "ticketCount",
-            "offset": 0,
-            "slot": "18",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:38"
-          },
-          {
-            "label": "lotteryWinner",
-            "offset": 0,
-            "slot": "19",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:39"
-          },
-          {
-            "label": "amountPool",
-            "offset": 0,
-            "slot": "20",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:40"
           },
           {
-            "label": "setCompone",
+            "label": "userTicketBalanceWithEth",
             "offset": 0,
-            "slot": "21",
-            "type": "t_mapping(t_uint256,t_bool)",
+            "slot": "17",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:41"
           },
           {
-            "label": "winnerAmount",
+            "label": "ticketOwner",
             "offset": 0,
-            "slot": "22",
-            "type": "t_mapping(t_uint256,t_uint256)",
+            "slot": "18",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_address))",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:42"
+          },
+          {
+            "label": "ticketCount",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:43"
+          },
+          {
+            "label": "lotteryWinner",
+            "offset": 0,
+            "slot": "20",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:44"
+          },
+          {
+            "label": "amountPool",
+            "offset": 0,
+            "slot": "21",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:45"
+          },
+          {
+            "label": "setCompone",
+            "offset": 0,
+            "slot": "22",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:46"
+          },
+          {
+            "label": "winnerAmount",
+            "offset": 0,
+            "slot": "23",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:47"
           }
         ],
         "types": {
@@ -239,19 +252,27 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(IProvider)87": {
+          "t_contract(IPeripheryPayments)117": {
+            "label": "contract IPeripheryPayments",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IProvider)846": {
             "label": "contract IProvider",
             "numberOfBytes": "20"
           },
-          "t_contract(IRamdomNumber)105": {
+          "t_contract(IRamdomNumber)864": {
             "label": "contract IRamdomNumber",
             "numberOfBytes": "20"
           },
-          "t_contract(ISwap)138": {
+          "t_contract(ISwap)897": {
             "label": "contract ISwap",
             "numberOfBytes": "20"
           },
-          "t_contract(IcErc20)169": {
+          "t_contract(ISwapRouter)217": {
+            "label": "contract ISwapRouter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IcErc20)934": {
             "label": "contract IcErc20",
             "numberOfBytes": "20"
           },
@@ -286,9 +307,9 @@
         }
       }
     },
-    "8146bf69f8865703fcf4ab15b4121e9ccc1259264b2bd41790ba8739cce838c1": {
-      "address": "0xAD523115cd35a8d4E60B3C0953E0E0ac10418309",
-      "txHash": "0x495ed3503127688eca8f952a482a826cdd77077646273696ab4b00cbdd7174a5",
+    "0efbd5bdf05a9f7ca2ca3a527ca65965df68ebb3d648007764530939da968507": {
+      "address": "0xaB7B4c595d3cE8C85e16DA86630f2fc223B05057",
+      "txHash": "0xfef70d3dec80bf40d9820d3a9438765846b5a05a3c0bfeccf1b59e6f1d484c0f",
       "layout": {
         "storage": [
           {
@@ -297,7 +318,7 @@
             "slot": "0",
             "type": "t_bool",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:12"
+            "src": "contracts\\LotteryV1.sol:14"
           },
           {
             "label": "admin",
@@ -305,7 +326,7 @@
             "slot": "0",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:13"
+            "src": "contracts\\LotteryV1.sol:15"
           },
           {
             "label": "dai",
@@ -313,7 +334,7 @@
             "slot": "1",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:14"
+            "src": "contracts\\LotteryV1.sol:16"
           },
           {
             "label": "usdc",
@@ -321,7 +342,7 @@
             "slot": "2",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:15"
+            "src": "contracts\\LotteryV1.sol:17"
           },
           {
             "label": "usdt",
@@ -329,7 +350,7 @@
             "slot": "3",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:16"
+            "src": "contracts\\LotteryV1.sol:18"
           },
           {
             "label": "weth",
@@ -337,7 +358,7 @@
             "slot": "4",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:17"
+            "src": "contracts\\LotteryV1.sol:19"
           },
           {
             "label": "pool3",
@@ -345,143 +366,151 @@
             "slot": "5",
             "type": "t_address",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:18"
-          },
-          {
-            "label": "tryCryptoPool",
-            "offset": 0,
-            "slot": "6",
-            "type": "t_address",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:19"
+            "src": "contracts\\LotteryV1.sol:20"
           },
           {
             "label": "tikectPriceInToken",
             "offset": 0,
-            "slot": "7",
-            "type": "t_uint256",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:20"
-          },
-          {
-            "label": "tikectPriceInEth",
-            "offset": 0,
-            "slot": "8",
+            "slot": "6",
             "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:21"
           },
           {
-            "label": "time",
+            "label": "tikectPriceInEth",
             "offset": 0,
-            "slot": "9",
+            "slot": "7",
             "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:22"
           },
           {
-            "label": "lotteryRound",
+            "label": "time",
             "offset": 0,
-            "slot": "10",
+            "slot": "8",
             "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:23"
           },
           {
-            "label": "provider",
+            "label": "lotteryRound",
             "offset": 0,
-            "slot": "11",
-            "type": "t_contract(IProvider)87",
+            "slot": "9",
+            "type": "t_uint256",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:24"
           },
           {
-            "label": "exchange",
+            "label": "provider",
             "offset": 0,
-            "slot": "12",
-            "type": "t_contract(ISwap)138",
+            "slot": "10",
+            "type": "t_contract(IProvider)551",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:25"
           },
           {
-            "label": "ramdomNumber",
+            "label": "exchange",
             "offset": 0,
-            "slot": "13",
-            "type": "t_contract(IRamdomNumber)105",
+            "slot": "11",
+            "type": "t_contract(ISwap)602",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:26"
           },
           {
-            "label": "cToken",
+            "label": "ramdomNumber",
             "offset": 0,
-            "slot": "14",
-            "type": "t_contract(IcErc20)169",
+            "slot": "12",
+            "type": "t_contract(IRamdomNumber)569",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:27"
           },
           {
-            "label": "userTicketBalanceWithToken",
+            "label": "cToken",
             "offset": 0,
-            "slot": "15",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "slot": "13",
+            "type": "t_contract(IcErc20)633",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:35"
+            "src": "contracts\\LotteryV1.sol:28"
           },
           {
-            "label": "userTicketBalanceWithEth",
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_contract(ISwapRouter)217",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:29"
+          },
+          {
+            "label": "peripheryPayments",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_contract(IPeripheryPayments)117",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:30"
+          },
+          {
+            "label": "userTicketBalanceWithToken",
             "offset": 0,
             "slot": "16",
             "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
             "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:36"
-          },
-          {
-            "label": "ticketOwner",
-            "offset": 0,
-            "slot": "17",
-            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_address))",
-            "contract": "LotteryV1",
-            "src": "contracts\\LotteryV1.sol:37"
-          },
-          {
-            "label": "ticketCount",
-            "offset": 0,
-            "slot": "18",
-            "type": "t_mapping(t_uint256,t_uint256)",
-            "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:38"
           },
           {
-            "label": "lotteryWinner",
+            "label": "userTicketBalanceWithEth",
             "offset": 0,
-            "slot": "19",
-            "type": "t_mapping(t_uint256,t_uint256)",
+            "slot": "17",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:39"
           },
           {
-            "label": "amountPool",
+            "label": "ticketOwner",
             "offset": 0,
-            "slot": "20",
-            "type": "t_mapping(t_uint256,t_uint256)",
+            "slot": "18",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_address))",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:40"
           },
           {
-            "label": "setCompone",
+            "label": "ticketCount",
             "offset": 0,
-            "slot": "21",
-            "type": "t_mapping(t_uint256,t_bool)",
+            "slot": "19",
+            "type": "t_mapping(t_uint256,t_uint256)",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:41"
           },
           {
-            "label": "winnerAmount",
+            "label": "lotteryWinner",
             "offset": 0,
-            "slot": "22",
+            "slot": "20",
             "type": "t_mapping(t_uint256,t_uint256)",
             "contract": "LotteryV1",
             "src": "contracts\\LotteryV1.sol:42"
+          },
+          {
+            "label": "amountPool",
+            "offset": 0,
+            "slot": "21",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:43"
+          },
+          {
+            "label": "setCompone",
+            "offset": 0,
+            "slot": "22",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:44"
+          },
+          {
+            "label": "winnerAmount",
+            "offset": 0,
+            "slot": "23",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:45"
           }
         ],
         "types": {
@@ -493,19 +522,297 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(IProvider)87": {
+          "t_contract(IPeripheryPayments)117": {
+            "label": "contract IPeripheryPayments",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IProvider)551": {
             "label": "contract IProvider",
             "numberOfBytes": "20"
           },
-          "t_contract(IRamdomNumber)105": {
+          "t_contract(IRamdomNumber)569": {
             "label": "contract IRamdomNumber",
             "numberOfBytes": "20"
           },
-          "t_contract(ISwap)138": {
+          "t_contract(ISwap)602": {
             "label": "contract ISwap",
             "numberOfBytes": "20"
           },
-          "t_contract(IcErc20)169": {
+          "t_contract(ISwapRouter)217": {
+            "label": "contract ISwapRouter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IcErc20)633": {
+            "label": "contract IcErc20",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(uint256 => mapping(uint256 => address))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    },
+    "5598ac5c8f516dc070843db0cc05258f2a761d4ac7ec7f7c53da8165e6a183f3": {
+      "address": "0x2b5A4e5493d4a54E717057B127cf0C000C876f9B",
+      "txHash": "0xb766f020b4b10606857b9baa5070d499372e112171c534699f3227408e36079e",
+      "layout": {
+        "storage": [
+          {
+            "label": "init",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:14"
+          },
+          {
+            "label": "admin",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:15"
+          },
+          {
+            "label": "dai",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:16"
+          },
+          {
+            "label": "usdc",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:17"
+          },
+          {
+            "label": "usdt",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:18"
+          },
+          {
+            "label": "weth",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:19"
+          },
+          {
+            "label": "pool3",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_address",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:20"
+          },
+          {
+            "label": "tikectPriceInToken",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:21"
+          },
+          {
+            "label": "tikectPriceInEth",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:22"
+          },
+          {
+            "label": "time",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:23"
+          },
+          {
+            "label": "lotteryRound",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:24"
+          },
+          {
+            "label": "provider",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_contract(IProvider)551",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:25"
+          },
+          {
+            "label": "exchange",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_contract(ISwap)602",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:26"
+          },
+          {
+            "label": "ramdomNumber",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_contract(IRamdomNumber)569",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:27"
+          },
+          {
+            "label": "cToken",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_contract(IcErc20)633",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:28"
+          },
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_contract(ISwapRouter)217",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:29"
+          },
+          {
+            "label": "peripheryPayments",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_contract(IPeripheryPayments)117",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:30"
+          },
+          {
+            "label": "userTicketBalanceWithToken",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:38"
+          },
+          {
+            "label": "userTicketBalanceWithEth",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:39"
+          },
+          {
+            "label": "ticketOwner",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_address))",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:40"
+          },
+          {
+            "label": "ticketCount",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:41"
+          },
+          {
+            "label": "lotteryWinner",
+            "offset": 0,
+            "slot": "20",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:42"
+          },
+          {
+            "label": "amountPool",
+            "offset": 0,
+            "slot": "21",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:43"
+          },
+          {
+            "label": "setCompone",
+            "offset": 0,
+            "slot": "22",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:44"
+          },
+          {
+            "label": "winnerAmount",
+            "offset": 0,
+            "slot": "23",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "LotteryV1",
+            "src": "contracts\\LotteryV1.sol:45"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IPeripheryPayments)117": {
+            "label": "contract IPeripheryPayments",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IProvider)551": {
+            "label": "contract IProvider",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IRamdomNumber)569": {
+            "label": "contract IRamdomNumber",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ISwap)602": {
+            "label": "contract ISwap",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ISwapRouter)217": {
+            "label": "contract ISwapRouter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IcErc20)633": {
             "label": "contract IcErc20",
             "numberOfBytes": "20"
           },
