@@ -104,32 +104,39 @@ modifier onlyAdmin() {
         tikectPriceInEth = 3000000000000000;
 
         lotteryRound = 1;
-        ticketCount[1] = lotteryRound;
-        ticketCount[2] = lotteryRound;
+        ticketCount[lotteryRound] = 0;
+        ticketCount[lotteryRound + 1] = 0;
         time = block.timestamp;
         init = true;
     }
 
     function buyTicketWithToken(uint _amount, Token _token) public investCompone upDateData{
-        require( _token != Token.WETH);
-        require(_amount > tikectPriceInToken);
-        require((_amount % tikectPriceInToken) == 0);
+        require( _token != Token.WETH, "Eth is not allowed here");
 
         uint _amountPool;
-        uint amountTikects = _amount / tikectPriceInToken;
+        uint amountTikects;
 
         if(_token == Token.USDT){
 
+            require(_amount > (tikectPriceInToken * (10 ** 6)), "Not enough payment");
+            require((_amount % (tikectPriceInToken * (10 ** 6))) == 0, "The number of tickets is not whole");
+            amountTikects = _amount / (tikectPriceInToken * (10 ** 6));
             _transferToken(usdt,_amount);
             _amountPool = _swapper(pool3, usdt, dai, _amount);
 
         } else if(_token == Token.USDC){
 
+            require(_amount > (tikectPriceInToken * (10 ** 6)), "Not enough payment");
+            require((_amount % (tikectPriceInToken * (10 ** 6))) == 0, "The number of tickets is not whole");
+            amountTikects = _amount / (tikectPriceInToken * (10 ** 6));
             _transferToken(usdc,_amount);
             _amountPool = _swapper(pool3, usdc, dai, _amount);
 
         }else{
 
+            require(_amount > (tikectPriceInToken * (10 ** 18)), "Not enough payment");
+            require((_amount % (tikectPriceInToken * (10 ** 18))) == 0, "The number of tickets is not whole");
+            amountTikects = _amount / (tikectPriceInToken * (10 ** 18));
             _transferToken(dai,_amount);
             _amountPool = _amount;
         }
@@ -150,8 +157,8 @@ modifier onlyAdmin() {
     }
 
     function buyTicketWithEth() public payable investCompone upDateData{
-        require(msg.value > tikectPriceInEth);
-        require((msg.value % tikectPriceInEth) == 0);
+        require(msg.value > tikectPriceInEth, "Not enough payment");
+        require((msg.value % tikectPriceInEth) == 0, "The number of tickets is not whole");
 
         uint _amountPool;
         uint _amountPoolBefore;
@@ -200,19 +207,19 @@ modifier onlyAdmin() {
         uint _amount;
 
         if(_token == Token.USDT){
-            _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
+           _amount = userTicketBalanceWithToken[_round][msg.sender] * (tikectPriceInToken * (10 ** 18));
            _exchange = _swapper(pool3, dai, usdt, _amount);
            _transferTokenOut(usdt, _exchange, msg.sender);
            userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else if(_token == Token.USDC){
-            _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
+            _amount = userTicketBalanceWithToken[_round][msg.sender] * (tikectPriceInToken * (10 ** 18));
             _exchange = _swapper(pool3, dai, usdc, _amount);
             _transferTokenOut(usdc, _exchange, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else{
-            _amount = userTicketBalanceWithToken[_round][msg.sender] * tikectPriceInToken;
+            _amount = userTicketBalanceWithToken[_round][msg.sender] * (tikectPriceInToken * (10 ** 18));
             _transferTokenOut(dai, _amount, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
         }
@@ -239,9 +246,8 @@ modifier onlyAdmin() {
 //Internal Functions
 
     function _ticketAsing(uint _round) internal {
-        require(_round == 1 || _round == 2);
-        ticketOwner[_round][ticketCount[_round]] = msg.sender;
-        ticketCount[_round]++;
+        ticketOwner[_round][ticketCount[_round] + 1] = msg.sender;
+        ticketCount[_round] += 1;
     }
 
     function _swapper(address _pool, address _tokenFrom, address _tokenTo, uint _amount) internal returns(uint){
