@@ -49,6 +49,10 @@ contract LotteryV1{
 
 //Events
 
+    event buyTicket(address buyer, uint round, uint ticketNumber);
+    event withdrawalOfMoney(address ownerTickets, uint round, bytes32 message);
+    event winnerClaimsPrize(address winner, uint round, bytes32 message);
+
 //Modifiers
 
 modifier upDateData() {
@@ -194,8 +198,9 @@ modifier onlyAdmin() {
 
         _transferTokenOut(dai, payAdmin, admin);
         _transferTokenOut(dai, payWinner, msg.sender);
-
         winnerAmount[_round] = 0;
+
+        emit winnerClaimsPrize(msg.sender, _round, "Winner has claimed his prize");
     }
 
     function getMyMoneyBackInToken(Token _token, uint _round) public investCompone upDateData{
@@ -225,6 +230,8 @@ modifier onlyAdmin() {
             _transferTokenOut(dai, _amount, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
         }
+
+        emit withdrawalOfMoney(msg.sender, _round, "Have withdrawn your money");
     }
 
     function getMyMoneyBackInEth(uint _round) public investCompone upDateData{
@@ -237,6 +244,8 @@ modifier onlyAdmin() {
         IERC20Upgradeable(dai).approve(address(swapRouter), _amount);
         _swapTokenForEth(dai, weth, _amount);
         userTicketBalanceWithEth[_round][msg.sender] = 0;
+
+        emit withdrawalOfMoney(msg.sender, _round, "Have withdrawn your money");
     }
 
     function setUpDateDate() public onlyAdmin investCompone upDateData{}
@@ -251,6 +260,8 @@ modifier onlyAdmin() {
     function _ticketAsing(uint _round) internal {
         ticketOwner[_round][ticketCount[_round] + 1] = msg.sender;
         ticketCount[_round] += 1;
+
+        emit buyTicket(msg.sender, _round, ticketCount[_round]);
     }
 
     function _swapper(address _pool, address _tokenFrom, address _tokenTo, uint _amount) internal returns(uint){

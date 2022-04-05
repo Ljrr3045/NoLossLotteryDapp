@@ -19,5 +19,14 @@
     "@openzeppelin/contracts": "^3.4.1-solc-0.7-2",
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "@uniswap/v3-periphery": "^1.4.0"
+  },
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "coverage": "npx hardhat coverage",
+    "scriptDeployRandomNumber": "npx hardhat run --network hardhat scripts/RamdomNumber-script.js",
+    "scriptDeployProxy": "npx hardhat run --network hardhat scripts/LotteryV1Deploy-script.js",
+    "scriptUpdateProxy": "npx hardhat run --network hardhat scripts/LotteryV2UpDate-script.js",
+    "deploy": "npx hardhat --network hardhat deploy"
   }
 }
