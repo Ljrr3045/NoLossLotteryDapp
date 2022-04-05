@@ -55,7 +55,7 @@ modifier upDateData() {
 
     if(block.timestamp > (time + 7 days)){
         lotteryWinner[lotteryRound] = _getRamdomNumber(ticketCount[lotteryRound]);
-        winnerAmount[lotteryRound] = _balanceOfUnderlying();
+        winnerAmount[lotteryRound] = _balanceOfUnderlying() / 10;
         _componeRedeem(_getCTokenBalance());
         time = block.timestamp;
         lotteryRound++;
@@ -75,7 +75,7 @@ modifier investCompone() {
 }
 
 modifier onlyAdmin() {
-        require(admin == msg.sender, "Ownable: caller is not the owner");
+        require(admin == msg.sender, "Caller is not the Admin");
         _;
     }
 
@@ -142,13 +142,13 @@ modifier onlyAdmin() {
         }
 
         if(block.timestamp <= (time + 2 days)){
-            userTicketBalanceWithToken[lotteryRound][msg.sender] += amountTikects;
+            userTicketBalanceWithToken[lotteryRound][msg.sender] += _amountPool;
             amountPool[lotteryRound] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound);
             } 
         }else{
-            userTicketBalanceWithToken[lotteryRound + 1][msg.sender] += amountTikects; 
+            userTicketBalanceWithToken[lotteryRound + 1][msg.sender] += _amountPool; 
             amountPool[lotteryRound + 1] += _amountPool;
             for(uint i=0; i<amountTikects; i++){
                 _ticketAsing(lotteryRound + 1);
@@ -185,9 +185,9 @@ modifier onlyAdmin() {
     }
 
     function iWinWantToWithdraw(uint _round) public investCompone upDateData{
-        require(_round > 0 && _round < lotteryRound);
-        require(ticketOwner[_round][lotteryWinner[_round]] == msg.sender);
-        require(winnerAmount[_round] > 0);
+        require(_round > 0 && _round < lotteryRound, "Can't withdraw for this round yet");
+        require(ticketOwner[_round][lotteryWinner[_round]] == msg.sender, "You are not the winner");
+        require(winnerAmount[_round] > 0, "You already claimed your prize");
 
         uint payAdmin = (winnerAmount[_round] * 5) / 100;
         uint payWinner = winnerAmount[_round] - payAdmin;
@@ -199,39 +199,42 @@ modifier onlyAdmin() {
     }
 
     function getMyMoneyBackInToken(Token _token, uint _round) public investCompone upDateData{
-        require( _token != Token.WETH);
-        require(_round > 0 && _round < lotteryRound);
-        require(userTicketBalanceWithToken[_round][msg.sender] > 0);
+        require( _token != Token.WETH, "Eth is not allowed here");
+        require(_round > 0 && _round < lotteryRound, "Can't withdraw for this round yet");
+        require(userTicketBalanceWithToken[_round][msg.sender] > 0, "Not have available balance in this round");
 
         uint _exchange;
         uint _amount;
 
         if(_token == Token.USDT){
-           _amount = userTicketBalanceWithToken[_round][msg.sender] * (tikectPriceInToken * (10 ** 18));
+           _amount = userTicketBalanceWithToken[_round][msg.sender];
+           IERC20Upgradeable(dai).approve(address(exchange), _amount);
            _exchange = _swapper(pool3, dai, usdt, _amount);
            _transferTokenOut(usdt, _exchange, msg.sender);
            userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else if(_token == Token.USDC){
-            _amount = userTicketBalanceWithToken[_round][msg.sender] * (tikectPriceInToken * (10 ** 18));
+            _amount = userTicketBalanceWithToken[_round][msg.sender];
+            IERC20Upgradeable(dai).approve(address(exchange), _amount);
             _exchange = _swapper(pool3, dai, usdc, _amount);
             _transferTokenOut(usdc, _exchange, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
 
         }else{
-            _amount = userTicketBalanceWithToken[_round][msg.sender] * (tikectPriceInToken * (10 ** 18));
+            _amount = userTicketBalanceWithToken[_round][msg.sender];
             _transferTokenOut(dai, _amount, msg.sender);
             userTicketBalanceWithToken[_round][msg.sender] = 0;
         }
     }
 
     function getMyMoneyBackInEth(uint _round) public investCompone upDateData{
-        require(_round > 0 && _round < lotteryRound);
-        require(userTicketBalanceWithEth[_round][msg.sender] > 0);
+        require(_round > 0 && _round < lotteryRound, "Can't withdraw for this round yet");
+        require(userTicketBalanceWithEth[_round][msg.sender] > 0, "Not have available balance in this round");
 
         uint _amount;
 
         _amount = userTicketBalanceWithEth[_round][msg.sender];
+        IERC20Upgradeable(dai).approve(address(swapRouter), _amount);
         _swapTokenForEth(dai, weth, _amount);
         userTicketBalanceWithEth[_round][msg.sender] = 0;
     }
@@ -277,7 +280,7 @@ modifier onlyAdmin() {
         peripheryPayments.refundETH();
     }
 
-    function _swapTokenForEth(address _tokenIn, address _tokenOut, uint amountIn) internal {
+    function _swapTokenForEth(address _tokenIn, address _tokenOut, uint _amountIn) internal {
 
         uint24 poolFee = 3000;
 
@@ -288,7 +291,7 @@ modifier onlyAdmin() {
                 fee: poolFee,
                 recipient: msg.sender,
                 deadline: block.timestamp + 10,
-                amountIn: amountIn,
+                amountIn: _amountIn,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
             }
@@ -301,7 +304,7 @@ modifier onlyAdmin() {
 
         IERC20Upgradeable(_token).transferFrom(msg.sender, address(this), _amount);
 
-        if(_token != usdt){
+        if(_token != dai){
             IERC20Upgradeable(_token).approve(address(exchange), _amount);
         }
     }
