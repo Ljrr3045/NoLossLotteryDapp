@@ -1,6 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
+/**@title No loss Lottery Dapp
+  *@author ljrr3045
+  *@notice This contract seeks to implement a system where users can participate in a 
+  lottery where they do not have losses. They can always withdraw their initial investment, 
+  and if they are the winners of the lottery they can charge interest.
+*/
+
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
@@ -30,13 +37,18 @@ contract LotteryV1{
     ISwapRouter internal swapRouter;
     IPeripheryPayments internal peripheryPayments;
     IVRFCoordinator internal vrfCoordinator;
+    ///@dev These are the global variables used for contract management.
 
 //Enums
 
+    ///@dev Enum used to identify the tokens used.
     enum Token {DAI, USDC, USDT, WETH}
 
 //Mappins
 
+    /**@dev Each of these mappings is responsible for storing the different data recorded by 
+      users throughout the different rounds.
+    */
     mapping(uint => mapping(address => uint)) public userTicketBalanceWithToken;
     mapping(uint => mapping(address => uint)) public userTicketBalanceWithEth;
     mapping(uint => mapping(uint => address)) public ticketOwner;
@@ -55,36 +67,49 @@ contract LotteryV1{
 
 //Modifiers
 
-modifier upDateData() {
+    /**@notice This modifier is in charge of modifying all the corresponding data, once 7 days have passed 
+      since the beginning (it is found in all the functions so that it can update the data automatically).
+      *@dev It is in charge of obtaining the winning ticket of the round, withdrawing the funds from the compound, 
+      updating the lottery round, etc.
+    */
+    modifier upDateData() {
 
-    if(block.timestamp > (time + 7 days)){
-        lotteryWinner[lotteryRound] = _getRamdomNumber(ticketCount[lotteryRound]);
-        winnerAmount[lotteryRound] = _balanceOfUnderlying() / 10;
-        _componeRedeem(_getCTokenBalance());
-        time = block.timestamp;
-        lotteryRound++;
-        ticketCount[lotteryRound + 1] = 1;
-    }
-    _;
-}
-
-modifier investCompone() {
-    if(block.timestamp > (time + 2 days)){
-        if(setCompone[lotteryRound] == false){
-            _componeMint(amountPool[lotteryRound]);
-            setCompone[lotteryRound] = true;
+        if(block.timestamp > (time + 7 days)){
+            lotteryWinner[lotteryRound] = _getRamdomNumber(ticketCount[lotteryRound]);
+            winnerAmount[lotteryRound] = _balanceOfUnderlying() / 10;
+            _componeRedeem(_getCTokenBalance());
+            time = block.timestamp;
+            lotteryRound++;
+            ticketCount[lotteryRound + 1] = 1;
         }
+        _;
     }
-    _;
-}
 
-modifier onlyAdmin() {
+    /**@notice This modifier is in charge of modifying all the corresponding data, once 2 days have passed 
+      since the beginning (it is found in all the functions so that it can update the data automatically).
+      *@dev It is in charge of investing the funds, collected during the previous two days, in compound.
+    */
+    modifier investCompone() {
+        if(block.timestamp > (time + 2 days)){
+            if(setCompone[lotteryRound] == false){
+                _componeMint(amountPool[lotteryRound]);
+                setCompone[lotteryRound] = true;
+            }
+        }
+        _;
+    }
+
+    ///@dev This modifier check if the person calling the function is the admin of the contract.
+    modifier onlyAdmin() {
         require(admin == msg.sender, "Caller is not the Admin");
         _;
     }
 
 //Public Functions
 
+    /**@notice Function that is the constructor of the contract and initialize all variables.
+      *@dev Can only be called once.
+    */
     function initContract(address _ramdomNumber, address _vrfCoordinator) public{
         require(init == false, "Contract are init");
         admin = msg.sender;
@@ -114,6 +139,12 @@ modifier onlyAdmin() {
         init = true;
     }
 
+    /**@notice This feature allows the user to buy lottery tickets only with stable coins (DAI, USDC, USDT).
+      *@dev Depending on the elapsed time, your tickets will be assigned to the current or next round. Also all the 
+      money received will be swap to DAI.
+      *@dev The money obtained from the swap (with Curve Finance) will be stored in a mapping so that it can later be returned to the user 
+      when the lottery ends.
+    */
     function buyTicketWithToken(uint _amount, Token _token) public investCompone upDateData{
         require( _token != Token.WETH, "Eth is not allowed here");
 
@@ -160,6 +191,12 @@ modifier onlyAdmin() {
         }
     }
 
+    /**@notice This feature allows the user to buy lottery tickets only with ETH.
+      *@dev Depending on the elapsed time, your tickets will be assigned to the current or next round. Also all the 
+      money received will be swap to DAI.
+      *@dev The money obtained from the swap (with UniSwap) will be stored in a mapping so that it can later be returned to the user 
+      when the lottery ends.
+    */
     function buyTicketWithEth() public payable investCompone upDateData{
         require(msg.value > tikectPriceInEth, "Not enough payment");
         require((msg.value % tikectPriceInEth) == 0, "The number of tickets is not whole");
@@ -188,6 +225,9 @@ modifier onlyAdmin() {
         }
     }
 
+    /**@notice Function that allows the winner of the lottery to claim his prize obtained from the investment in compound.
+      *@dev The money will be deposited in DAI and you can only withdraw the money if the lottery round is over.
+    */
     function iWinWantToWithdraw(uint _round) public investCompone upDateData{
         require(_round > 0 && _round < lotteryRound, "Can't withdraw for this round yet");
         require(ticketOwner[_round][lotteryWinner[_round]] == msg.sender, "You are not the winner");
@@ -203,6 +243,11 @@ modifier onlyAdmin() {
         emit winnerClaimsPrize(msg.sender, _round, "Winner has claimed his prize");
     }
 
+    /**@notice Function that allows the user to withdraw all their money invested in tickets in a round.
+      (only if I buy with tokens).
+      *@dev The user can withdraw all his money in any stablecoin (all the money will be exchanged based on 
+      the amount of DAI he entered). Can only withdraw your money if the round is over.
+    */
     function getMyMoneyBackInToken(Token _token, uint _round) public investCompone upDateData{
         require( _token != Token.WETH, "Eth is not allowed here");
         require(_round > 0 && _round < lotteryRound, "Can't withdraw for this round yet");
@@ -234,6 +279,12 @@ modifier onlyAdmin() {
         emit withdrawalOfMoney(msg.sender, _round, "Have withdrawn your money");
     }
 
+    /**@notice Function that allows the user to withdraw all their money invested in tickets in a round.
+      (only if I buy with ETH).
+      *@dev The user can withdraw all his invested money and will get the equivalent WETH in exchange 
+      (all the money will be exchanged based on the amount of DAI that he entered). Can only withdraw your 
+      money if the round is over.
+    */
     function getMyMoneyBackInEth(uint _round) public investCompone upDateData{
         require(_round > 0 && _round < lotteryRound, "Can't withdraw for this round yet");
         require(userTicketBalanceWithEth[_round][msg.sender] > 0, "Not have available balance in this round");
@@ -248,8 +299,13 @@ modifier onlyAdmin() {
         emit withdrawalOfMoney(msg.sender, _round, "Have withdrawn your money");
     }
 
+    /**@dev Backup function in the event that users do not call the classic functions and therefore the data is not 
+      updated in relation to time. This function can be called by the Admin and thus update the data manually, if the 
+      times are the corresponding ones (Only Admin can execute this action).
+    */
     function setUpDateDate() public onlyAdmin investCompone upDateData{}
 
+    ///@dev Function that allows to modify the Admin of the contract (Only Admin can execute this action).
     function transferAdmin(address  newAdmin) public virtual onlyAdmin {
         require( newAdmin != address(0), "Ownable: new owner is the zero address");
         admin = newAdmin;
@@ -257,6 +313,7 @@ modifier onlyAdmin() {
 
 //Internal Functions
 
+    ///@dev Function that assigns ownership of a specific ticket (from a given round) to the caller of the function.
     function _ticketAsing(uint _round) internal {
         ticketOwner[_round][ticketCount[_round] + 1] = msg.sender;
         ticketCount[_round] += 1;
@@ -264,12 +321,14 @@ modifier onlyAdmin() {
         emit buyTicket(msg.sender, _round, ticketCount[_round]);
     }
 
+    ///@dev Function to exchange stablecoins using Curve Finances.
     function _swapper(address _pool, address _tokenFrom, address _tokenTo, uint _amount) internal returns(uint){
 
         uint _exchage = exchange.exchange(_pool, _tokenFrom, _tokenTo, _amount, 1, address(this));
         return _exchage;
     }
 
+    ///@dev Function to exchange ETH for stablecoins using UniSwap.
     function _swapEthForToken(address _tokenIn, address _tokenOut, uint amountIn) internal {
 
         uint24 poolFee = 3000;
@@ -291,6 +350,7 @@ modifier onlyAdmin() {
         peripheryPayments.refundETH();
     }
 
+    ///@dev Function to exchange stablecoins for WETH using UniSwap.
     function _swapTokenForEth(address _tokenIn, address _tokenOut, uint _amountIn) internal {
 
         uint24 poolFee = 3000;
@@ -311,6 +371,9 @@ modifier onlyAdmin() {
         swapRouter.exactInputSingle(params);
     }
 
+    /**@dev Function to transfer tokens from a user to a contract. And if it is not DAI, approve them for Curve 
+      Finances to change them to DAI
+    */
     function _transferToken(address _token, uint _amount) internal {
 
         IERC20Upgradeable(_token).transferFrom(msg.sender, address(this), _amount);
@@ -320,27 +383,35 @@ modifier onlyAdmin() {
         }
     }
 
+    ///@dev Function to transfer tokens from the contract to a user.
     function _transferTokenOut(address _token, uint _amount, address _to) internal {
         IERC20Upgradeable(_token).transfer(_to, _amount);
     }
 
+    ///@dev Function to start an investment with Compound Finances.
     function _componeMint(uint _amount) internal {
         IERC20Upgradeable(dai).approve(address(cToken), _amount);
         require(cToken.mint(_amount) == 0, "mint failed");
     }
 
+    ///@dev Function to check the balance invested in Compound Finances.
     function _getCTokenBalance() internal view returns (uint) {
         return cToken.balanceOf(address(this));
     }
 
+    ///@dev Function to withdraw the balance invested and obtained in Compound Finances.
     function _componeRedeem(uint _amount) internal {
         require(cToken.redeem(_amount) == 0, "redeem failed");
     }
 
+    ///@dev Function to verify the profit generated from the investment in Compound Finances.
     function _balanceOfUnderlying() internal returns (uint) {
         return cToken.balanceOfUnderlying(address(this));
     }
 
+    /**@dev Function that allows obtaining a random number using the ChainLink oracle (We can specify 
+      up to what number we want our random number, starting from 1).
+    */
     function _getRamdomNumber(uint _until) internal returns(uint){
         ramdomNumber.setUntil(_until);
         ramdomNumber.getRandomNumber();
