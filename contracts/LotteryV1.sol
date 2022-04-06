@@ -75,9 +75,9 @@ contract LotteryV1{
     modifier upDateData() {
 
         if(block.timestamp > (time + 7 days)){
+
             lotteryWinner[lotteryRound] = _getRamdomNumber(ticketCount[lotteryRound]);
-            winnerAmount[lotteryRound] = _balanceOfUnderlying() / 10;
-            _componeRedeem(_getCTokenBalance());
+            winnerAmount[lotteryRound] = _balanceOfUnderlying(lotteryRound);
             time = block.timestamp;
             lotteryRound++;
             ticketCount[lotteryRound + 1] = 1;
@@ -405,8 +405,15 @@ contract LotteryV1{
     }
 
     ///@dev Function to verify the profit generated from the investment in Compound Finances.
-    function _balanceOfUnderlying() internal returns (uint) {
-        return cToken.balanceOfUnderlying(address(this));
+    function _balanceOfUnderlying(uint _round) internal returns (uint) {
+        uint balanceBefore;
+        uint balanceAfter;
+
+        balanceBefore = IERC20Upgradeable(dai).balanceOf(address(this));
+        _componeRedeem(_getCTokenBalance());
+        balanceAfter = IERC20Upgradeable(dai).balanceOf(address(this));
+
+        return balanceAfter - (balanceBefore + amountPool[_round]);
     }
 
     /**@dev Function that allows obtaining a random number using the ChainLink oracle (We can specify 
