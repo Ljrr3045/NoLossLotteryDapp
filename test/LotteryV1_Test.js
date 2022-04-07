@@ -243,7 +243,7 @@ describe("LotteryV1", async ()=> {
     
             it("Winner has to be selected", async ()=> {
     
-                winner = await await lotteryV1.connect(admin).lotteryWinner(1);
+                winner = await lotteryV1.connect(admin).lotteryWinner(1);
     
                 assert(winner > 0);
                 assert(winner <= 300);
